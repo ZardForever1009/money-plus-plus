@@ -10,6 +10,7 @@
 #define ACCOUNT "zard@zardforever"
 #define USERNAME "zard"
 #define PROGRAMNAME "money++"
+#define PROGRAMVERSION "money++ (code in C++) 1.0.1\nMoney tracking purpose\ncreated by zardforever at 2022\n"  
 
 using namespace std;
 
@@ -29,6 +30,11 @@ void show_message(string stats, string line, bool new_line){
     }
     else if(stats=="input"){  // yellow output
         change_font_color(FOREGROUND_RED|FOREGROUND_GREEN);
+        cout<<line;
+        change_font_color(7);
+    }
+    else if(stats=="hightlight"){  // backgroung green output
+        change_font_color(BACKGROUND_GREEN);
         cout<<line;
         change_font_color(7);
     }
@@ -97,6 +103,7 @@ void money_plus_plus(){
         else if(action=="find");
         else if(action=="whoami")show_message("output", USERNAME, true);
         else if(action=="whoru")show_message("output", PROGRAMNAME, true);
+        else if(action=="money++ -v")show_message("output",PROGRAMVERSION,true);
         else{ // more instruction are good to add above
             show_message("failed", action+": command not found", true);
         }
