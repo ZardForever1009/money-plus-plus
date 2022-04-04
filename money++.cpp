@@ -2,6 +2,7 @@
 // name: money++
 #include <iostream>
 #include <string>
+#include <sstream>
 #include <fstream>
 #include <chrono>
 #include <ctime>
@@ -56,27 +57,31 @@ void show_message(string stats, string line, bool new_line){
 }
 
 // get user input & analyze
-string get_user_input(bool only_integer, string message){
-    string input;
-    if(only_integer){ // need to check validity
-        bool okay=false;        
-        while(!okay){
-            show_message("input", message, false);
-            getline(cin, input);
-            for(int i=0;i<input.size();i++){
-                if(!isdigit(input[i])){
-                    show_message("failed", input+": invalid input", false);                    
-                    break;
-                }
-                else if(i==input.size()-1)okay=true;
-            }            
-        }
-    }
-    else{
-        show_message("input", message, false);
-        cin>>input;
-    }
-    return input;        
+stringstream get_user_input(string message, bool only_integer){
+     string input;
+     stringstream result;     
+     if(only_integer){
+         bool okay=false;
+         while(!okay){
+             show_message("input", message, false);
+             getline(cin, input);
+             for(int i=0;i<input.size();i++){
+                 if(!isdigit(input[i])){
+                     show_message("failed", input+": invalid input",true);
+                     break;
+                 }
+                 else if(i==input.size()-1)okay=true;
+                 else;
+             }
+         }
+         result<<input;
+     }
+     else{
+         show_message("input", message, false);
+         getline(cin, input);
+         result<<input;
+     }
+     return result;
 }
 
 // get current time to store in file
@@ -91,20 +96,62 @@ string get_current_time(){
 
 // get all file name output
 void ls(){
-    show_message("filename", "[earn.txt] ", false);
-    show_message("filename", "[spent.txt] ", false);
-    show_message("filename", "[total.txt]", true);
+    show_message("filename", "[money.txt] ", false);   
+    show_message("hightlight", "[help.txt]", true);
     return;
 }
 
 // list all data saved
-void show_file_content(string filename){
+bool show_file_content(string filename){
     string line;
     ifstream file;
     file.open(filename, ios::in);
-    if(!file.is_open())show_message("failed", filename+": No such file", true);
+    if(!file.is_open()){
+        show_message("failed", filename+": No such file", true);
+        return false;
+    }
     else while(getline(file, line))show_message("output", line, true);
     file.close();
+    return true;
+}
+
+// format beautiful
+stringstream format_beautiful(string date, string income, string expense, string details, string last_modified){
+    stringstream result;
+    result<<date;
+    int income_size=8-income.length();
+    int expense_size=8-expense.length();
+    int details_size=3;
+    int last_size=42-details.length();
+    int size[4]={income_size,expense_size,details_size,last_size};
+    string item[4]={income,expense,details,last_modified};
+    for(int i=0;i<4;i++){        
+        for(int j=0;j<size[i];j++){
+            result<<" ";
+        }
+        result<<item[i];
+    }
+    return result;    
+}
+
+// append data 
+void append(string filename){
+    if(!show_file_content(filename))return;  // append file failed
+    show_message("success", "==========APPEND MODE==========", true);
+    // get data
+    string date, income, expense, details, last_modified;
+    date=get_user_input("Date: ", false).str();
+    income=get_user_input("Income: ", true).str();
+    expense=get_user_input("Expense: ", true).str();
+    details=get_user_input("Details: ", false).str();
+    last_modified=get_current_time();
+    stringstream ss=format_beautiful(date, income, expense, details, last_modified);
+    // append data
+    ofstream file;
+    file.open(filename, ios_base::app);
+    file<<ss.str();
+    file.close();
+    show_message("success", "======UPDATE SUCCESSFULLY======", true);
     return;
 }
 
@@ -113,23 +160,24 @@ void money_plus_plus(){
     bool leave=false;
     while(!leave){
         show_message("idle", ACCOUNT, false);
-        string action=get_user_input(false, "");
-        if(action=="clear")system("cls");
-        else if(action=="leave")leave=true;
-        else if(action=="ls")ls();        
-        else if(action=="help")show_file_content("help.txt");
-        else if(action=="insert");
-        else if(action=="find");
-        else if(action=="whoami")show_message("output", USERNAME, true);
-        else if(action=="whoru")show_message("output", PROGRAMNAME, true);
-        else if(action=="money++"){
-            string detail;
-            cin>>detail;
-            if(detail=="-v")show_message("output", PROGRAMVERSION, true);
+        string command, detail;
+        stringstream input=get_user_input("", false);
+        input>>command;
+        input>>detail;
+        if(command=="clear"&&detail=="")system("cls");
+        else if(command=="leave"&&detail=="")leave=true;
+        else if(command=="ls"&&detail=="")ls();        
+        else if(command=="help"&&detail=="")show_file_content("help.txt");
+        else if(command=="append"&&detail=="")append("money.txt");
+        else if(command=="find");
+        else if(command=="whoami"&&detail=="")show_message("output", USERNAME, true);
+        else if(command=="whoru"&&detail=="")show_message("output", PROGRAMNAME, true);
+        else if(command=="money++"){            
+            if(detail=="--version")show_message("output", PROGRAMVERSION, true);
             else show_file_content(detail);
         }
         else{ // more instruction are good to add above
-            show_message("failed", action+": command not found", true);
+            show_message("failed", input.str()+": command not found", true);
         }
     }
     return;
@@ -139,6 +187,5 @@ void money_plus_plus(){
 int main()
 {
     money_plus_plus();
-    
     return 0; 
 }
