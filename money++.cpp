@@ -144,6 +144,7 @@ bool pwd_check(string username, string pwd, int pwd_leng){
         show_message("output", "[money++] password for "+username+": ", false);
         getline(cin, input);
         if(real_pwd==input)return true;
+        
         else if(i!=3)show_message("failed", "Sorry, try again.",true);
         else;
     }
@@ -199,13 +200,25 @@ void find(string filename, string data){
     file.open(filename, ios::in);
     string line;
     if(data==""){
-        while(getline(file, line))show_message("output", line, true);
+        show_message("failed", "failed: Need specified data", true);
         return;
     }
-    while(getline(file, line)){  
-        if(line.find(data) == string::npos)show_message("output", line, true);
-        else show_message("hightlight", line, true);
+    bool matched=false;
+    while(getline(file, line)){
+        if(line.find(data) != string::npos){
+            matched=true;
+            break;
+        }
     }
+    file.close();
+    file.open(filename, ios::in);
+    if(matched){
+        while(getline(file, line)){        
+            if(line.find(data) == string::npos)show_message("output", line, true);
+            else show_message("hightlight", line, true);
+        }
+    }
+    else show_message("failed", "failed: No matched case", true);
     file.close();
     return;
 }
