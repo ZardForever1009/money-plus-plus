@@ -142,9 +142,17 @@ bool pwd_check(string username, string pwd, int pwd_leng){
     for(int i=0;i<pwd_leng;i++)real_pwd.push_back((pwd[i]+13));
     for(int i=1;i<=3;i++){
         show_message("output", "[money++] password for "+username+": ", false);
+        HANDLE hStdInput=GetStdHandle(STD_INPUT_HANDLE);
+        DWORD mode = 0;
+        // Create a restore point Mode
+        // is know 503
+        GetConsoleMode(hStdInput, &mode);
+        // Enable echo input
+        // set to 499
+        SetConsoleMode(hStdInput,mode & (~ENABLE_ECHO_INPUT));
         getline(cin, input);
-        if(real_pwd==input)return true;
-        
+        cout<<endl;
+        if(real_pwd==input)return true;        
         else if(i!=3)show_message("failed", "Sorry, try again.",true);
         else;
     }
@@ -240,10 +248,8 @@ void money_plus_plus(){
         else if(command=="find")find("money.txt", detail);
         else if(command=="whoami"&&detail=="")show_message("output", USERNAME, true);
         else if(command=="whoru"&&detail=="")show_message("output", PROGRAMNAME, true);
-        else if(command=="money++"){            
-            if(detail=="--version")show_message("output", PROGRAMVERSION, true);
-            else show_file_content(detail);
-        }
+        else if(command=="money++"&&detail=="--version")show_message("output", PROGRAMVERSION, true);
+        else if(command=="money++")show_file_content(detail);
         else{ // more instruction are good to add above
             show_message("failed", input.str()+": command not found", true);
         }
